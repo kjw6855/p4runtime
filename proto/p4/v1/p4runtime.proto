@@ -89,7 +89,7 @@ message WriteRequest {
     // Optional. Every data plane packet is guaranteed to be processed according
     // to table contents before the batch began, or after the batch completed
     // and the operations were programmed to the hardware.
-    // The batch is therefore treated as a transaction. 
+    // The batch is therefore treated as a transaction.
     DATAPLANE_ATOMIC = 2;
   }
   Atomicity atomicity = 5;
@@ -133,6 +133,12 @@ message Entity {
     RegisterEntry register_entry = 11;
     DigestEntry digest_entry = 12;
   }
+  string onos_flow_id = 13;
+  string onos_flow_status = 14;
+  string onos_group_id = 15;
+  string onos_group_status = 16;
+  int32 is_default_entry = 17;
+  int32 duration = 18;
 }
 
 message ExternEntry {
@@ -145,20 +151,21 @@ message ExternEntry {
 
 message TableEntry {
   uint32 table_id = 1;
-  repeated FieldMatch match = 2;
-  TableAction action = 3;
+  string table_name = 2;
+  repeated FieldMatch match = 3;
+  TableAction action = 4;
   // Should only be set if the match implies a TCAM lookup, i.e. at least one of
   // the match fields is Optional, Ternary or Range.  A higher number indicates
   // higher priority.  Only a highest priority entry that matches the packet
   // must be selected.  Multiple entries in the same table with the same
   // priority value are permitted.  See Section "TableEntry" in the
   // specification for details of the behavior.
-  int32 priority = 4;
+  int32 priority = 5;
   // Metadata (cookie) opaque to the target. There is no requirement of where
   // this is stored, as long as it is returned with the rest of the entry in
   // a Read RPC. This is deprecated in favor of the more flexible metadata
   // field.
-  uint64 controller_metadata = 5 [deprecated=true];
+  uint64 controller_metadata = 6 [deprecated=true];
   // meter_config and counter_data are convenience fields that enable the
   // controller to configure the direct resources associated with the table at
   // the same time as a match-action entry is inserted or modified.
@@ -180,15 +187,15 @@ message TableEntry {
   //     configuration, meter_config will not be set in the response.
   //   - If counter_data is unset in the request, it will be unset in the
   //     response as well.
-  MeterConfig meter_config = 6;
-  CounterData counter_data = 7;
+  MeterConfig meter_config = 7;
+  CounterData counter_data = 8;
   // Set to true if the table entry is being used to update the non-const
   // default action of the table. If true, the "match" field must be empty and
   // the "action" field must be populated with a valid direct action.
-  bool is_default_action = 8;
+  bool is_default_action = 9;
   // The TTL for the entry, in nanoseconds. A value of 0 means that the table
   // entry never "expires".
-  int64 idle_timeout_ns = 9;
+  int64 idle_timeout_ns = 10;
   message IdleTimeout {
     // Time elapsed - in nanoseconds - since the table entry was last "hit" as
     // part of a data plane table lookup.
@@ -197,14 +204,17 @@ message TableEntry {
   // Table write: this field should be left unset.
   // Table read: if the table supports idle timeout and time_since_last_hit is
   // set in the request, this field will be set in the response.
-  IdleTimeout time_since_last_hit = 10;
+  IdleTimeout time_since_last_hit = 11;
   // Arbitrary metadata from the controller that is opaque to the target.
-  bytes metadata = 11;
+  bytes metadata = 12;
+  int32 is_valid_entry = 13;
+  int32 matched_idx = 14;
 }
 
 // field_match_type ::= exact | ternary | lpm | range | optional
 message FieldMatch {
   uint32 field_id = 1;
+  string field_name = 2;
 
   // Matches can be performed on arbitrarily-large inputs; the protobuf type
   // 'bytes' is used to model arbitrarily-large values.
@@ -232,11 +242,11 @@ message FieldMatch {
   }
 
   oneof field_match_type {
-    Exact exact = 2;
-    Ternary ternary = 3;
-    LPM lpm = 4;
-    Range range = 6;
-    Optional optional = 7;
+    Exact exact = 3;
+    Ternary ternary = 4;
+    LPM lpm = 5;
+    Range range = 7;
+    Optional optional = 8;
     // Architecture-specific match value; it corresponds to the other_match_type
     // in the P4Info MatchField message.
     .google.protobuf.Any other = 100;
@@ -251,15 +261,18 @@ message TableAction {
     uint32 action_profile_group_id = 3;
     ActionProfileActionSet action_profile_action_set = 4;
   }
+  string action_selector_name = 5;
 }
 
 message Action {
   uint32 action_id = 1;
+  string action_name = 2;
   message Param {
-    uint32 param_id = 2;
-    bytes value = 3;
+    uint32 param_id = 3;
+    string param_name = 4;
+    bytes value = 5;
   }
-  repeated Param params = 4;
+  repeated Param params = 6;
 }
 
 message ActionProfileActionSet {
