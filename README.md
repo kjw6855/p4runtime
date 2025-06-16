@@ -21,12 +21,12 @@ Git tags are used to mark minor and patch release versions.
 ## Reading the latest version of the documentation
 
 The latest version of the P4Runtime v1 specification is available:
-* [here](https://p4.org/p4runtime/spec/master/P4Runtime-Spec.html) in **HTML**
-  format
-* [here](https://p4.org/p4runtime/spec/master/P4Runtime-Spec.pdf) in **PDF**
-  format
+* [here](https://p4.org/p4-spec/docs/p4runtime-spec-working-draft-html-version.html)
+  in **HTML** format
+* [here](https://p4.org/p4-spec/docs/p4runtime-spec-working-draft-pdf-version.html)
+  in **PDF** format
 
-It is updated every time a new commit is pushed to the master branch.
+It is updated every time a new commit is pushed to the main branch.
 
 ## Overview
 
@@ -40,8 +40,9 @@ devices or switches.
 
 # Community
 
- * **Meetings**: the P4.org API Working Group meets [every other Wednesday at
-   10.30AM (Pacific Time)](https://VMware.zoom.us/j/506821682).
+ * **Meetings**: the P4.org API Working Group meets every other Friday at
+   9:30AM (Pacific Time). Please see the [P4 Working Groups Calendar](https://calendar.google.com/calendar/u/0/embed?src=j4to42rsjqtfks0qb7iah8gous@group.calendar.google.com&ctz=America/Los_Angeles)
+   for meeting details.
  * **Email**: join our [mailing
    list](https://lists.p4.org/mailman/listinfo/p4-dev_lists.p4.org) to receive
    announcements and stay up-to-date with Working Group activities.
@@ -50,12 +51,14 @@ devices or switches.
 
 # Compiling P4Runtime Protobuf files
 
+## Build Using Docker
+
 You can use Docker to run the protoc compiler on the P4Runtime Protobuf files
-and generate the Protobuf & gRPC bindings for C++ and Python:
+and generate the Protobuf & gRPC bindings for C++, Python and Go:
 
 ```
-docker build -t p4runtime -f CI/Dockerfile .
-docker run -v <OUT>:/out/ -t p4runtime /p4runtime/CI/compile_protos.sh /out/
+docker build -t p4runtime -f codegen/Dockerfile .
+docker run -v <OUT>:/out/ -t p4runtime /p4runtime/codegen/compile_protos.sh /out/
 ```
 
 This will generate the bindings in the local `<OUT>` directory. **You need to
@@ -65,6 +68,22 @@ may need to change the permissions manually for the generated files after the
 
 These commands are the ones used by our CI system to ensure that the Protobuf
 files stay semantically valid.
+
+## Build Using Bazel ![build protobufs](https://github.com/p4lang/p4runtime/workflows/build%20protobufs/badge.svg)
+
+The protobufs can also be built using [Bazel](https://bazel.build/).
+The Bazel WORKSPACE and BUILD files are located in the [proto folder](proto/).
+
+To build, run
+```sh
+cd proto && bazel build //...
+```
+
+We run [continuous integration](.github/workflows/ci-build-proto.yml) to ensure
+this works with the latest version of Bazel.
+
+For an example of how to include P4Runtime in your own Bazel project, see
+[bazel/example](bazel/example).
 
 # Modification Policy
 
@@ -124,6 +143,74 @@ processes.
    change. After approval, the author would create a GitHub issue as well as a
    pull request against the specification that a key committer must review and
    approve.
+
+When updating the Protobuf files in a pull request, you will also need to update
+the generated Go and Python files, which are hosted in this repository under
+[go/](go/) and [py/](py/). This can be done easily by running `./codegen/update.sh`,
+provided docker is installed and your user is part of the "docker" group
+(which means that the `docker` command can be executed without `sudo`).
+
+## Use generated P4Runtime library
+
+### Go
+
+To include the P4Runtime Go library to your project, you can add this repository url
+to your `go.mod` file, for example:
+
+```
+module your_module_name
+
+go 1.13
+
+require (
+  github.com/p4lang/p4runtime v1.3.0
+)
+```
+
+### Python
+
+To install P4Runtime Python library, use the `pip3` command:
+
+```bash
+pip3 install p4runtime
+# Or specify the version
+pip3 install p4runtime==1.3.0
+```
+
+## Guidelines for using Protocol Buffers (protobuf) in backwards-compatible ways
+
+P4Runtime generally follows "Live at Head" development principles - new
+development happens on the `main` branch and there are no support branches.
+New releases are periodically created from the head of `main`.
+
+P4Runtime follows [semantic versioning](https://semver.org/) for release
+numbering, which means changes to the P4Runtime protobuf definitions have
+implications on the next release number. The team has tried its best so
+far to avoid a major version number bump, but recognizes that one may be
+necessary in the future.
+
+Whenever possible, it is best to introduce new functionality in backward
+compatible ways. For example when role config was introduced, an unset
+(empty) role configuration implies full pipeline access, which was the
+default behavior before the feature was introduced.
+
+There are no strict rules here for updating P4Runtime protobuf message
+definitions, only advice written by those with experience in using
+protobuf for applications while they have been extended over
+time.  They are here for learning and reference:
+
+* [Updating Proto Definitions Without Updating Code](https://developers.google.com/protocol-buffers/docs/overview#updating-defs)
+* [Updating A Message Type](https://developers.google.com/protocol-buffers/docs/proto3#updating)
+* [Backwards-compatibility issues in `oneof` fields](https://developers.google.com/protocol-buffers/docs/proto3#backwards-compatibility_issues)
+* [API design guide](https://cloud.google.com/apis/design)
+
+Some brief points, but not the full story:
+
+* Do not change or reuse field numbers.
+* Be careful when changing types.
+* You can deprecate fields, but do not remove them (and make sure that
+  you continue to support them) until you are sure that all clients
+  and servers are updated.
 
 
 [P4 Slack Workspace]: https://p4-lang.slack.com/join/shared_invite/enQtODA0NzY4Mjc5MTExLTRlMWVmN2I5ZTY4MTAzMDI3MGQ1OTZjM2ZmM2Q1MWE2YzZjYTQ2ZWMyMGUyYjQ2ZmIxMjFjZDE4ZThiN2ZkZWI

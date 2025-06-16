@@ -7,13 +7,16 @@ specification document.
 
 The markup version uses Madoko (https://www.madoko.net) to produce
 HTML and PDF versions of the documentation. Pre-built versions of the
-documentation are available at **[TODO]**
+documentation are available on the [P4.org specifications
+page](https://p4.org/specs).
 
 
 Files:
 - `P4Runtime-spec.mdk` is the main file. 
 - assets: Figures
-  - `*.odg` - OfficeLibre master drawing file used to export images. These are bulk-rendered at build time into .svg and .png images via `soffice` command-line (required in build environment)
+  - `*.odg` - OfficeLibre source drawing file used to export images. These are
+    bulk-rendered at build time into .svg and .png images via `soffice`
+    command-line (required in build environment)
 - `Makefile` builds documentation in the build subdirectory
 - `p4.json` is providing custom syntax highlighting for P4. It is a rip off from
   the cpp.json provided by Madoko (the "extend" clause does not work, my version
@@ -61,13 +64,3 @@ Note that to build the PDF you need a functional TeX version installed.
 You need to install miktex [http://miktex.org/], madoko
 [https://www.madoko.net/] and node.js [https://nodejs.org/en/].  To
 build you can invoke the make.bat script.
-
-
-# TODO
-## Formating Fixups TODO
-
-## Content TODO
-Following are major content items which are missing or incomplete:
-*  Section 17. P4Runtime Versioning
-*  Section 18. Extending P4Runtime for non-PSA architectures
-*  Section 19. Lifetime of a session

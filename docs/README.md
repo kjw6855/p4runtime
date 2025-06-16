@@ -169,6 +169,7 @@ this [section of the Madoko
 spec](http://madoko.org/reference.html#sec-smart-quotes-symbols-and-direct-links).
 
 ## Document Figures
+
 Each image in the specification has a corresponding `.odg` file under
 `assets/`. These are LibreOffice drawing files. The files are rendered into
 `.svg` and `.png` images (for HTML and PDF output, resepectively) at build time,
@@ -182,17 +183,16 @@ change the object's aspect ratio.)
 
 ## CI upload of built documents
 
-Travis takes care of uploading the built HTML version of the spec to Github. The
-latest working draft (master branch) can be found
-[here](https://p4.org/p4runtime/spec/master/P4Runtime-Spec.html).
+Github Actions take care of uploading the built HTML version of the spec to
+Github. The latest working draft (main branch) can be found
+[here](https://p4.org/p4runtime/spec/main/P4Runtime-Spec.html).
 
 Additionally, you can access the HTML & PDF versions of the spec for any given
 branch of this repository by using the following URLs:
-* `https://s3-us-west-2.amazonaws.com/p4runtime/travis/<your_branch_name>/P4Runtime-Spec.html`
+* `https://s3-us-west-2.amazonaws.com/p4runtime/ci/<your_branch_name>/P4Runtime-Spec.html`
   for the **HTML** version
-* `https://s3-us-west-2.amazonaws.com/p4runtime/travis/<your_branch_name>/P4Runtime-Spec.pdf`
+* `https://s3-us-west-2.amazonaws.com/p4runtime/ci/<your_branch_name>/P4Runtime-Spec.pdf`
   for the **PDF** version
 
-Unfortunately, because of how Travis encrypts environment variables (which are
-required to upload documents to S3), this does not work for branches in forked
+Unfortunately, for security reasons, this does not work for branches in forked
 repositories, even for opened pull requests.
